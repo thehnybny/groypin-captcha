@@ -4,38 +4,35 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Turnstile</title>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
       body { margin:0; padding:16px; font-family: system-ui, sans-serif; }
       #cf { display:flex; justify-content:center; margin-top:12px; }
       .hint { font-size:14px; opacity:.7; text-align:center; }
     </style>
-  </head>
-  <body>
-    <div class="hint">Completing verification…</div>
-    <div id="cf"></div>
 
     <script>
-      (function () {
-        const params = new URLSearchParams(location.search);
-        const sitekey = params.get('sitekey');
-        const action  = params.get('action') || 'signin';
+      // Read params first so the onload handler can use them.
+      const params  = new URLSearchParams(location.search);
+      const sitekey = params.get('sitekey');
+      const action  = params.get('action') || 'signin';
 
-        function done(token) {
-          if (window.TokenChannel && window.TokenChannel.postMessage) {
-            window.TokenChannel.postMessage(token);
-          } else {
-            location.href = 'turnstile://token/' + encodeURIComponent(token);
-          }
+      function done(token) {
+        if (window.TokenChannel && window.TokenChannel.postMessage) {
+          window.TokenChannel.postMessage(token);
+        } else {
+          location.href = 'turnstile://token/' + encodeURIComponent(token);
         }
-        function fail() {
-          if (window.TokenChannel && window.TokenChannel.postMessage) {
-            window.TokenChannel.postMessage('');
-          } else {
-            location.href = 'turnstile://token/';
-          }
+      }
+      function fail() {
+        if (window.TokenChannel && window.TokenChannel.postMessage) {
+          window.TokenChannel.postMessage('');
+        } else {
+          location.href = 'turnstile://token/';
         }
+      }
 
+      // Called by the Turnstile script once it has loaded.
+      function onloadTurnstileCallback() {
         const wid = turnstile.render('#cf', {
           sitekey,
           action,
@@ -46,9 +43,15 @@
           'timeout-callback': fail,
           retry: 'auto',
         });
-
         try { turnstile.execute(wid); } catch (e) {}
-      })();
+      }
     </script>
+
+    <!-- Load Turnstile and invoke our onload handler when it's ready -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async defer></script>
+  </head>
+  <body>
+    <div class="hint">Completing verification…</div>
+    <div id="cf"></div>
   </body>
 </html>
