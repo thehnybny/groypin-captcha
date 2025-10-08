@@ -11,7 +11,7 @@
     </style>
 
     <script>
-      // Read params first so the onload handler can use them.
+      // Read params for the onload handler
       const params  = new URLSearchParams(location.search);
       const sitekey = params.get('sitekey');
       const action  = params.get('action') || 'signin';
@@ -31,23 +31,22 @@
         }
       }
 
-      // Called by the Turnstile script once it has loaded.
+      // Called when the Turnstile script has loaded
       function onloadTurnstileCallback() {
-        const wid = turnstile.render('#cf', {
+        // appearance: "execute" => renders then auto-runs
+        turnstile.render('#cf', {
           sitekey,
           action,
-          size: 'auto',
           theme: 'auto',
+          appearance: 'execute',
           callback: done,
           'error-callback': fail,
           'timeout-callback': fail,
-          retry: 'auto',
+          retry: 'auto'
         });
-        try { turnstile.execute(wid); } catch (e) {}
       }
     </script>
 
-    <!-- Load Turnstile and invoke our onload handler when it's ready -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async defer></script>
   </head>
   <body>
